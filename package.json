@@ -1,22 +1,67 @@
 {
   "name": "drugin-client",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm typecheck && pnpm test:unit",
+    "test:unit": "jest --passWithNoTests",
+    "prepare": "husky"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
+    "@react-navigation/bottom-tabs": "^7.4.0",
+    "@react-navigation/elements": "^2.6.3",
+    "@react-navigation/native": "^7.1.8",
+    "@sentry/react-native": "~7.2.0",
+    "@tanstack/react-query": "^5.90.9",
     "expo": "~54.0.34",
+    "expo-constants": "~18.0.10",
+    "expo-font": "~14.0.9",
+    "expo-image": "~3.0.10",
+    "expo-linking": "~8.0.9",
+    "expo-router": "~6.0.24",
+    "expo-secure-store": "^56.0.4",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-screens": "^4.25.2",
+    "react-native-web": "^0.21.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^14.0.0",
     "@types/react": "~19.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "eslint": "^9.25.0",
+    "eslint-config-expo": "~10.0.0",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "lint-staged": "^16.2.7",
+    "msw": "^2.12.2",
+    "prettier": "^3.4.2",
     "typescript": "~5.9.2"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "pnpm lint -- --max-warnings=0"
+    ],
+    "**/*.{json,md,css,scss}": "prettier --write"
   },
   "private": true
 }
