@@ -1,1 +1,5 @@
-//진입점 -> 분기 후 리다이렉트
+import { Redirect } from 'expo-router';
+
+export default function AppIndex() {
+  return <Redirect href="/(tabs)" />;
+}

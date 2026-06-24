@@ -1,11 +1,10 @@
 //
-//
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>ai 채팅</Text>
+      <Text style={styles.text}>홈 화면</Text>
     </View>
   );
 }
