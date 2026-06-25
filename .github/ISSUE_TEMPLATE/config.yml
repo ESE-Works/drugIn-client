@@ -1,0 +1,5 @@
+blank_issues_enabled: false # 빈 이슈 생성 막기
+contact_links:
+  - name: 💬 팀 채널
+    url: https://...
+    about: 급한 문의는 여기로
