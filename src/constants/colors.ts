@@ -60,6 +60,7 @@ export const colors = {
     warning: '#FAAD14',
     success: '#52C41A',
     info: '#1890FF',
+    badge: '#B3261E',
   },
 
   // 분석 결과
