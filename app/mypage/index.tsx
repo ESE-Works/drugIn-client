@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,12 +7,24 @@ import { router, Stack } from 'expo-router';
 import { colors } from '@/constants/colors';
 import ListItem from '@/components/ListItem';
 import SubHeader from '@/components/layout/SubHeader';
+import { useAuthStore } from '@/store/authStore';
 
 export default function MyPage() {
+  const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    console.log('====== 현재 스토어에 저장된 유저 정보 ======');
+    console.log(JSON.stringify(user, null, 2)); // 보기 좋게 포맷팅해서 출력
+    console.log('==============================================');
+  }, [user]);
+
+  const displayNickname = user?.nickname ? user.nickname : '로딩 중...';
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <Stack.Screen options={{ headerShown: false }} />
-      <SubHeader title="닉네임" />
+      {/* <SubHeader title="닉네임" /> */}
+      <SubHeader title={displayNickname} />
 
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Text style={styles.sectionTitle}>서류</Text>
@@ -68,18 +80,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bg.base,
   },
-  // header: {
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   justifyContent: 'space-between', // 양끝 정렬로 타이틀을 중앙에 배치
-  //   paddingHorizontal: 20,
-  //   paddingVertical: 16,
-  // },
-  // headerTitle: {
-  //   fontSize: 20,
-  //   fontWeight: 'bold',
-  //   color: colors.text.primary,
-  // },
   contentContainer: {
     paddingHorizontal: 20,
     paddingTop: 10,

@@ -7,7 +7,7 @@ import {
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
-import { colors } from '@/constants/colors'; // 경로 별칭(@)을 쓴다면 이렇게! (안 쓰면 ../constants/colors)
+import { colors } from '@/constants/colors';
 
 interface ListItemProps {
   title: string;
@@ -38,16 +38,13 @@ export default function ListItem({
       onPress={onPress}
       style={[styles.container, hasDivider && styles.divider, style]}
     >
-      {/* 1. 왼쪽 영역 (아이콘, 뱃지 등) */}
       {leftContent && <View style={styles.leftSection}>{leftContent}</View>}
 
-      {/* 2. 중앙 텍스트 영역 (flex: 1을 줘서 남은 공간을 꽉 채우게 함) */}
       <View style={styles.textSection}>
         <Text style={[styles.title, titleStyle]}>{title}</Text>
         {description && <Text style={styles.description}>{description}</Text>}
       </View>
 
-      {/* 3. 오른쪽 영역 (숫자, 화살표 등) */}
       {rightContent && <View style={styles.rightSection}>{rightContent}</View>}
     </Container>
   );
@@ -56,20 +53,20 @@ export default function ListItem({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center', // 세로 중앙 정렬
-    paddingVertical: 16, // 위아래 여백 (디자인에 맞게 조절해!)
+    alignItems: 'center',
+    paddingVertical: 16,
     paddingHorizontal: 20,
     backgroundColor: colors.bg.base,
   },
   divider: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.border.subtle, // 연한 회색 선
+    borderBottomColor: colors.border.subtle,
   },
   leftSection: {
-    marginRight: 12, // 텍스트와의 간격
+    marginRight: 12,
   },
   textSection: {
-    flex: 1, // 남는 가로 공간을 모두 차지하도록!
+    flex: 1,
     justifyContent: 'center',
   },
   title: {
@@ -80,7 +77,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 13,
     color: colors.text.secondary,
-    marginTop: 4, // 제목과 설명 사이 간격
+    marginTop: 4,
   },
   rightSection: {
     marginLeft: 12,
