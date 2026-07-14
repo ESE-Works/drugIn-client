@@ -9,13 +9,6 @@ interface CardProps {
 }
 
 export default function Card({ children, onPress, style }: CardProps) {
-  //   const Container = onPress ? TouchableOpacity : View;
-
-  //   return (
-  //     <Container activeOpacity={0.7} onPress={onPress} style={[styles.card, style]}>
-  //       {children}
-  //     </Container>
-  //   );
   if (!onPress) {
     return <View style={[styles.card, style]}>{children}</View>;
   }

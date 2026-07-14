@@ -21,11 +21,7 @@ export default function Header() {
         </TouchableOpacity>
 
         <Link href="/mypage" asChild>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={styles.iconButton}
-            // onPress={() => router.push('/mypage')}
-          >
+          <TouchableOpacity activeOpacity={0.7} style={styles.iconButton}>
             <Ionicons name="person-circle" size={26} color={colors.brand.primaryDeepest} />
           </TouchableOpacity>
         </Link>
