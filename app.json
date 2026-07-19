@@ -16,7 +16,8 @@
       "typedRoutes": true
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.drugInclient"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,12 +25,25 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ese.seulchung"
     },
     "web": {
       "bundler": "metro",
       "output": "static"
     },
-    "plugins": ["expo-secure-store"]
+    "plugins": [
+      "expo-secure-store",
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          "kakaoAppKey": "2ee507a2202ec9730445ef7c57a2bfaa",
+          "kotlinVersion": "2.1.0",
+          "overrideKakaoSDKVersion": ""
+        }
+      ],
+      "expo-web-browser",
+      "./plugins//withKakaoMavenRepo.js"
+    ]
   }
 }

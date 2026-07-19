@@ -72,29 +72,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'AI 채팅',
-          tabBarIcon: ({ focused }) => (
-            <View style={[styles.iconContainer, focused && styles.activeBackground]}>
-              <Ionicons
-                name="chatbubble-ellipses-outline"
-                size={22}
-                color={focused ? colors.text.brand : colors.text.secondary}
-              />
-              <Text
-                style={[
-                  styles.iconText,
-                  { color: focused ? colors.text.brand : colors.text.secondary },
-                ]}
-              >
-                AI채팅
-              </Text>
-            </View>
-          ),
-        }}
-      />
     </Tabs>
   );
 }
