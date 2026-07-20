@@ -1,56 +1,19 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-import ListItem from '@/components/ListItem';
 import { colors, spacing, fontSize, fontWeight, radius } from '@/constants';
-import type { AnalysisResult, Contract } from '@/types/api';
+import type { Contract } from '@/types/api';
 
-import RiskBadge from './RiskBadge';
-import SeverityTag, { type ResultSeverity } from './SeverityTag';
+import RiskScoreGauge from './RiskScoreGauge';
+import FraudAlertBanner from './FraudAlertBanner';
+import SummaryCard from './SummaryCard';
+import ContractInfoCard from './ContractInfoCard';
+import ChecklistSection from './ChecklistSection';
+import ClauseDetailList from './ClauseDetailList';
 
 interface AnalysisResultViewProps {
   contract: Contract;
   onRetry?: () => void;
-}
-
-interface ResultListItem {
-  id: string;
-  severity: ResultSeverity;
-  title: string;
-  description: string;
-}
-
-function buildResultItems(result: AnalysisResult): ResultListItem[] {
-  const items: ResultListItem[] = [];
-
-  result.fraud_risk?.indicators.forEach((indicator, index) => {
-    items.push({
-      id: `fraud-${index}`,
-      severity: indicator.severity,
-      title: indicator.indicator,
-      description: indicator.description,
-    });
-  });
-
-  result.clauses.forEach((clause) => {
-    items.push({
-      id: `clause-${clause.id}`,
-      severity: clause.type,
-      title: clause.reason,
-      description: clause.suggestion,
-    });
-  });
-
-  result.missing_check.forEach((check, index) => {
-    items.push({
-      id: `missing-${index}`,
-      severity: check.severity,
-      title: check.item,
-      description: check.description,
-    });
-  });
-
-  return items;
 }
 
 export default function AnalysisResultView({ contract, onRetry }: AnalysisResultViewProps) {
@@ -90,68 +53,35 @@ export default function AnalysisResultView({ contract, onRetry }: AnalysisResult
     );
   }
 
-  const items = buildResultItems(result);
-
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <RiskBadge score={result.risk_score} grade={result.risk_grade} />
-      </View>
+      <RiskScoreGauge score={result.risk_score} grade={result.risk_grade} />
+
       {result.is_truncated && (
         <Text style={styles.truncatedNotice}>입력 텍스트가 길어 일부만 분석되었어요.</Text>
       )}
 
-      <Text style={styles.sectionTitle}>분석 결과</Text>
+      {result.fraud_risk?.detected && <FraudAlertBanner fraudRisk={result.fraud_risk} />}
 
-      {items.length === 0 ? (
-        <Text style={styles.emptyText}>특별히 확인된 위험 요소가 없어요.</Text>
-      ) : (
-        <View style={styles.list}>
-          {items.map((item, index) => (
-            <ListItem
-              key={item.id}
-              title={item.title}
-              description={item.description}
-              leftContent={<SeverityTag severity={item.severity} />}
-              hasDivider={index !== items.length - 1}
-              style={styles.listItem}
-            />
-          ))}
-        </View>
-      )}
+      <SummaryCard summary={result.summary} />
+
+      {result.extraction && <ContractInfoCard extraction={result.extraction} />}
+
+      {result.missing_check.length > 0 && <ChecklistSection items={result.missing_check} />}
+
+      {result.clauses.length > 0 && <ClauseDetailList clauses={result.clauses} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.md,
-  },
-  headerRow: {
-    flexDirection: 'row',
+    gap: spacing.lg,
   },
   truncatedNotice: {
+    alignSelf: 'center',
     fontSize: fontSize.xs,
     color: colors.status.warning,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.text.primary,
-    marginTop: spacing.sm,
-  },
-  list: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    overflow: 'hidden',
-  },
-  listItem: {
-    paddingHorizontal: spacing.lg,
-  },
-  emptyText: {
-    fontSize: fontSize.sm,
-    color: colors.text.secondary,
   },
   stateContainer: {
     flex: 1,

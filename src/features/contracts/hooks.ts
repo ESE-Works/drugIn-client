@@ -1,12 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import {
-  analyzeSpecialTerms,
-  analyzeText,
-  fetchContractById,
-  fetchContractSample,
-  fetchContracts,
-} from './api';
+import { analyzeImage, fetchContractById, fetchContractSample, fetchContracts } from './api';
 
 export const contractKeys = {
   all: ['contracts'] as const,
@@ -38,14 +32,8 @@ export function useContractDetailQuery(id: string | undefined) {
   });
 }
 
-export function useAnalyzeTextMutation() {
+export function useAnalyzeImageMutation() {
   return useMutation({
-    mutationFn: analyzeText,
-  });
-}
-
-export function useAnalyzeSpecialTermsMutation() {
-  return useMutation({
-    mutationFn: analyzeSpecialTerms,
+    mutationFn: analyzeImage,
   });
 }

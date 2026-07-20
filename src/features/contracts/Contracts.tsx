@@ -1,55 +1,58 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  BackHandler,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Toast from '@/components/Toast';
 import { colors, spacing, fontSize, fontWeight, radius } from '@/constants';
-import type { ApiErrorBody, Contract } from '@/types/api';
+import type { Contract } from '@/types/api';
 
-import { useAnalyzeSpecialTermsMutation, useAnalyzeTextMutation, useContractSampleQuery } from './hooks';
+import type { PickedImage } from './api';
+import { useAnalyzeImageMutation, useContractSampleQuery } from './hooks';
 import AnalysisResultView from './components/AnalysisResultView';
+import ImageInputBox from './components/ImageInputBox';
 
-type Mode = 'full' | 'special_terms';
 type Stage = 'idle' | 'loading' | 'result';
 
-const PLACEHOLDER: Record<Mode, string> = {
-  full: '계약서 전체 내용을 붙여넣어\n위험 요소를 분석해보세요',
-  special_terms: '특약 조항만 붙여넣어\n위험 요소를 분석해보세요',
-};
-
 function getErrorMessage(error: unknown): string {
-  const body = (error as { response?: { data?: ApiErrorBody } })?.response?.data;
-  return body?.message ?? '분석 요청 중 오류가 발생했어요.';
+  // 백엔드가 반환하는 원문 메시지(라우트 오류, 서버 내부 오류 등)는 사용자에게 그대로 노출하지 않는다.
+  const status = (error as { response?: { status?: number } })?.response?.status;
+  if (status === 400) {
+    return '주거용 임대차 계약서로 인식되지 않았어요. 다른 사진으로 다시 시도해주세요.';
+  }
+  if (status === 503) {
+    return '지금은 분석하기 어려워요. 잠시 후 다시 시도해주세요.';
+  }
+  return '분석 요청 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.';
 }
 
 export default function Contracts() {
   const [stage, setStage] = useState<Stage>('idle');
-  const [mode, setMode] = useState<Mode>('full');
-  const [text, setText] = useState('');
+  const [image, setImage] = useState<PickedImage | null>(null);
   const [contract, setContract] = useState<Contract | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const analyzeTextMutation = useAnalyzeTextMutation();
-  const analyzeSpecialTermsMutation = useAnalyzeSpecialTermsMutation();
+  const analyzeImageMutation = useAnalyzeImageMutation();
   const sampleQuery = useContractSampleQuery(false);
 
   const handleSubmit = (): void => {
-    if (!text.trim()) {
-      setToastMessage('분석할 텍스트를 입력해주세요.');
+    if (!image) {
+      setToastMessage('사진을 선택해주세요.');
       return;
     }
 
-    const mutation = mode === 'full' ? analyzeTextMutation : analyzeSpecialTermsMutation;
     setStage('loading');
-    mutation.mutate(text, {
+    analyzeImageMutation.mutate(image, {
       onSuccess: (result) => {
         setContract(result);
         setStage('result');
@@ -82,9 +85,23 @@ export default function Contracts() {
 
   const handleReset = (): void => {
     setContract(null);
-    setText('');
+    setImage(null);
     setStage('idle');
   };
+
+  // 결과/분석 중 화면에서 하드웨어 뒤로가기를 누르면 탭을 벗어나지 않고 입력 화면으로 돌아간다.
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (stage === 'idle') {
+          return false;
+        }
+        handleReset();
+        return true;
+      });
+      return () => subscription.remove();
+    }, [stage]),
+  );
 
   if (stage === 'result' && contract) {
     return (
@@ -102,66 +119,46 @@ export default function Contracts() {
   const isLoading = stage === 'loading';
 
   return (
-    <View style={styles.container}>
-      <View style={styles.modeRow}>
-        <TouchableOpacity
-          style={[styles.modeButton, mode === 'full' && styles.modeButtonActive]}
-          onPress={() => setMode('full')}
-          activeOpacity={0.7}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <ImageInputBox
+          image={image}
+          onPick={setImage}
+          onSizeExceeded={() => setToastMessage('10MB 이하의 사진만 업로드할 수 있어요.')}
           disabled={isLoading}
-        >
-          <Text style={[styles.modeText, mode === 'full' && styles.modeTextActive]}>
-            전체 계약서 분석
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.modeButton, mode === 'special_terms' && styles.modeButtonActive]}
-          onPress={() => setMode('special_terms')}
-          activeOpacity={0.7}
-          disabled={isLoading}
-        >
-          <Text style={[styles.modeText, mode === 'special_terms' && styles.modeTextActive]}>
-            특약 조항만 분석
-          </Text>
-        </TouchableOpacity>
-      </View>
+        />
 
-      <TextInput
-        style={styles.box}
-        multiline
-        editable={!isLoading}
-        placeholder={PLACEHOLDER[mode]}
-        placeholderTextColor={colors.brand.primaryDark}
-        value={text}
-        onChangeText={setText}
-      />
+        <View style={styles.belowBox}>
+          {isLoading ? (
+            <>
+              <Text style={styles.loadingText}>분석 중</Text>
+              <ActivityIndicator size="large" color={colors.brand.primary} />
+            </>
+          ) : image ? (
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.submitText}>분석하기</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.caption}>계약서 사진 한 장이면{'\n'}위험요소를 찾아드려요</Text>
+          )}
+        </View>
 
-      <View style={styles.belowBox}>
-        {isLoading ? (
-          <>
-            <Text style={styles.loadingText}>분석 중</Text>
-            <ActivityIndicator size="large" color={colors.brand.primary} />
-          </>
-        ) : text.trim().length > 0 ? (
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.7}>
-            <Text style={styles.submitText}>분석하기</Text>
+        <View style={styles.footerLinks}>
+          <TouchableOpacity onPress={handleViewSample} disabled={isLoading}>
+            <Text style={styles.footerLink}>샘플로 먼저 볼까요?</Text>
           </TouchableOpacity>
-        ) : (
-          <Text style={styles.caption}>계약서 텍스트만 있으면{'\n'}위험요소를 찾아드려요</Text>
-        )}
-      </View>
+          <TouchableOpacity onPress={() => router.push('/analysis/history')} disabled={isLoading}>
+            <Text style={styles.footerLink}>분석 이력</Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.footerLinks}>
-        <TouchableOpacity onPress={handleViewSample} disabled={isLoading}>
-          <Text style={styles.footerLink}>샘플로 먼저 볼까요?</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/analysis/history')} disabled={isLoading}>
-          <Text style={styles.footerLink}>분석 이력</Text>
-        </TouchableOpacity>
+        <Toast message={toastMessage} onHide={() => setToastMessage(null)} />
       </View>
-
-      <Toast message={toastMessage} onHide={() => setToastMessage(null)} />
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -170,46 +167,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bg.base,
     padding: spacing.lg,
-  },
-  modeRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  modeButton: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    alignItems: 'center',
-  },
-  modeButtonActive: {
-    backgroundColor: colors.brand.primaryGhost,
-    borderColor: colors.brand.primary,
-  },
-  modeText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.text.secondary,
-  },
-  modeTextActive: {
-    color: colors.brand.primary,
-    fontWeight: fontWeight.bold,
-  },
-  box: {
-    height: 220,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.brand.primary,
-    borderRadius: radius.lg,
-    backgroundColor: colors.brand.primaryGhost,
-    padding: spacing.lg,
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.text.primary,
-    textAlign: 'center',
-    textAlignVertical: 'center',
   },
   belowBox: {
     alignItems: 'center',
