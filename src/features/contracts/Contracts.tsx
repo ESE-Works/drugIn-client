@@ -19,6 +19,7 @@ import type { Contract } from '@/types/api';
 
 import type { PickedImage } from './api';
 import { useAnalyzeImageMutation, useContractSampleQuery } from './hooks';
+import { requireLogin } from './authGate';
 import AnalysisResultView from './components/AnalysisResultView';
 import ImageInputBox from './components/ImageInputBox';
 
@@ -46,6 +47,10 @@ export default function Contracts() {
   const sampleQuery = useContractSampleQuery(false);
 
   const handleSubmit = (): void => {
+    if (!requireLogin()) {
+      return;
+    }
+
     if (!image) {
       setToastMessage('사진을 선택해주세요.');
       return;
@@ -151,7 +156,14 @@ export default function Contracts() {
           <TouchableOpacity onPress={handleViewSample} disabled={isLoading}>
             <Text style={styles.footerLink}>샘플로 먼저 볼까요?</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/analysis/history')} disabled={isLoading}>
+          <TouchableOpacity
+            onPress={() => {
+              if (requireLogin()) {
+                router.push('/analysis/history');
+              }
+            }}
+            disabled={isLoading}
+          >
             <Text style={styles.footerLink}>분석 이력</Text>
           </TouchableOpacity>
         </View>
