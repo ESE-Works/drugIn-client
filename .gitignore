@@ -42,3 +42,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+#custom
+history/
+
+dist/
