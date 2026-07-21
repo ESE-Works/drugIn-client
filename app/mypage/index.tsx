@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { router, Stack } from 'expo-router';
+import { router, Stack, Redirect } from 'expo-router';
 
 import { colors } from '@/constants/colors';
 import ListItem from '@/components/ListItem';
@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/authStore';
 
 export default function MyPage() {
   const user = useAuthStore((state) => state.user);
+  const { isLoggedIn } = useAuthStore();
 
   useEffect(() => {
     console.log('====== 현재 스토어에 저장된 유저 정보 ======');
@@ -18,58 +19,58 @@ export default function MyPage() {
     console.log('==============================================');
   }, [user]);
 
+  if (!isLoggedIn) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   const displayNickname = user?.nickname ? user.nickname : '로딩 중...';
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <Stack.Screen options={{ headerShown: false }} />
-      {/* <SubHeader title="닉네임" /> */}
       <SubHeader title={displayNickname} />
 
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.sectionTitle}>서류</Text>
+        <Text style={styles.sectionTitle}>개인정보</Text>
 
         <ListItem
-          title="업로드한 계약서"
-          leftContent={<Ionicons name="checkbox" size={22} color={colors.text.primary} />}
-          rightContent={<Text style={styles.badgeText}>24</Text>}
-          style={styles.activeListItem}
-          onPress={() => console.log('업로드한 계약서 클릭')}
+          title="거주 지역"
+          leftContent={<Ionicons name="location-outline" size={22} color={colors.text.primary} />}
+          rightContent={<Text style={styles.badgeText}>{user?.region ?? '미설정'}</Text>}
+          onPress={() => console.log('거주 지역 클릭')}
         />
 
         <ListItem
-          title="스크랩한 정책"
-          leftContent={<Ionicons name="bookmark-outline" size={22} color={colors.text.primary} />}
-          onPress={() => console.log('스크랩한 정책 클릭')}
+          title="나이"
+          leftContent={<Ionicons name="calendar-outline" size={22} color={colors.text.primary} />}
+          rightContent={
+            <Text style={styles.badgeText}>{user?.age ? `${user.age}세` : '미설정'}</Text>
+          }
+          onPress={() => console.log('나이 클릭')}
         />
 
         <ListItem
-          title="삭제한 계약서"
-          leftContent={<Ionicons name="trash-outline" size={22} color={colors.text.primary} />}
-          onPress={() => console.log('삭제한 계약서 클릭')}
+          title="소득 구간"
+          leftContent={<Ionicons name="wallet-outline" size={22} color={colors.text.primary} />}
+          rightContent={<Text style={styles.badgeText}>{user?.income_range ?? '미설정'}</Text>}
+          onPress={() => console.log('소득 구간 클릭')}
         />
 
         <View style={styles.divider} />
 
-        <Text style={styles.sectionTitle}>계정</Text>
-
         <ListItem
-          title="로그아웃"
-          leftContent={<Ionicons name="log-out-outline" size={22} color={colors.text.primary} />}
-          onPress={() => console.log('로그아웃 클릭')}
+          title="약관동의내역"
+          leftContent={
+            <Ionicons name="document-text-outline" size={22} color={colors.text.primary} />
+          }
+          onPress={() => router.push('/terms')}
         />
 
-        <ListItem
-          title="개인정보처리방침"
-          leftContent={<Ionicons name="log-out-outline" size={22} color={colors.text.primary} />} // 시안에 맞춰 동일한 아이콘 사용
-          onPress={() => console.log('개인정보처리방침 클릭')}
-        />
-
-        <ListItem
-          title="계정 삭제하기"
-          titleStyle={{ color: colors.status.error }}
-          onPress={() => console.log('계정 삭제하기 클릭')}
-        />
+        {/* <ListItem
+          title="온보딩 테스트"
+          leftContent={<Ionicons size={22} color={colors.text.primary} />}
+          onPress={() => router.push('/(auth)/onboarding')}
+        /> */}
       </ScrollView>
     </SafeAreaView>
   );

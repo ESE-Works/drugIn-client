@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
   ScrollView,
@@ -16,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/colors';
 import { useAuthStore } from '@/store/authStore';
 import { updateUserProfile } from '@/features/auth/api/userApi';
+import { postTermsConsents } from '@/features/auth/api/termsApi';
 
 const REGION_OPTIONS = [
   '서울',
@@ -45,10 +45,41 @@ const INCOME_OPTIONS = [
   '8,000만원 이상',
 ];
 const TERMS = [
-  { id: 'privacy', title: '[필수] 개인정보 수집·이용 동의', required: true },
-  { id: 'uniqueId', title: '[필수] 고유식별정보 처리 동의', required: true },
-  { id: 'thirdParty', title: '[필수] 제3자 제공 및 처리 위탁 동의', required: true },
-  { id: 'marketing', title: '[선택] 마케팅 정보 수신 동의', required: false },
+  {
+    id: 'privacy',
+    title: '[필수] 개인정보 수집·이용 동의',
+    required: true,
+    type: 'PRIVACY_REQUIRED',
+    version: '1.0',
+  },
+  {
+    id: 'uniqueId',
+    title: '[필수] 고유식별정보 처리 동의',
+    required: true,
+    type: 'UNIQUE_ID',
+    version: '1.0',
+  },
+  {
+    id: 'thirdParty',
+    title: '[필수] 제3자 제공 및 처리 위탁 동의',
+    required: true,
+    type: 'THIRD_PARTY',
+    version: '1.0',
+  },
+  {
+    id: 'privacyOptional',
+    title: '[선택] 수집·이용 동의',
+    required: false,
+    type: 'PRIVACY_OPTIONAL',
+    version: '1.0',
+  },
+  {
+    id: 'marketing',
+    title: '[선택] 마케팅 정보 수신 동의',
+    required: false,
+    type: 'MARKETING',
+    version: '1.0',
+  },
 ] as const;
 
 type TermId = (typeof TERMS)[number]['id'];
@@ -75,6 +106,7 @@ export default function OnboardingScreen() {
     privacy: false,
     uniqueId: false,
     thirdParty: false,
+    privacyOptional: false,
     marketing: false,
   });
 
@@ -87,6 +119,7 @@ export default function OnboardingScreen() {
       privacy: newValue,
       uniqueId: newValue,
       thirdParty: newValue,
+      privacyOptional: newValue,
       marketing: newValue,
     });
   };
@@ -124,15 +157,26 @@ export default function OnboardingScreen() {
     try {
       setIsLoading(true);
 
-      const numericAge = parseInt(age.replace(/[^0-9]/g, ''), 10) || 0;
+      const consentsPayload = TERMS.map((term) => ({
+        termType: term.type,
+        version: term.version,
+        agreed: agreements[term.id],
+      }));
 
-      const payload = {
+      const numericAge = parseInt(age.replace(/[^0-9]/g, ''), 10) || 0;
+      const profilePayload = {
         region: region,
         age: numericAge,
         income_range: incomeRange,
       };
 
-      const updatedUser = await updateUserProfile(payload);
+      console.log(
+        '🚀 [전송하는 약관 데이터]:',
+        JSON.stringify({ consents: consentsPayload }, null, 2),
+      );
+
+      const updatedUser = await updateUserProfile(profilePayload);
+      await postTermsConsents(consentsPayload);
 
       updateProfile({
         region: updatedUser.region,
@@ -141,8 +185,17 @@ export default function OnboardingScreen() {
       });
 
       router.replace('/(tabs)');
-    } catch (error) {
+    } catch (error: any) {
       console.error('온보딩 정보 등록 실패:', error);
+
+      if (error.response) {
+        // 서버가 응답을 줬는데 에러인 경우 (400, 500 등)
+        console.error('서버 에러 상태 코드:', error.response.status);
+        console.error('서버 상세 에러 메시지:', error.response.data);
+      } else {
+        // 네트워크 문제 등으로 서버에 아예 닿지 못한 경우
+        console.error('에러 내용:', error.message);
+      }
 
       Alert.alert(
         '등록 실패',
@@ -182,8 +235,12 @@ export default function OnboardingScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <View style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent} // 패딩은 여기에 적용
+        showsVerticalScrollIndicator={false} // 스크롤바 숨기기 (선택사항)
+      >
         <View style={styles.header}>
           <Text style={styles.title}>거의 다 왔어요! 🎉</Text>
           <Text style={styles.subtitle}>
@@ -258,14 +315,7 @@ export default function OnboardingScreen() {
                     {term.title}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: '/policy/[id]',
-                      params: { id: term.id },
-                    })
-                  }
-                >
+                <TouchableOpacity onPress={() => router.push('/policy')}>
                   <Text style={styles.detailText}>보기</Text>
                 </TouchableOpacity>
               </View>
@@ -290,30 +340,29 @@ export default function OnboardingScreen() {
             </TouchableOpacity>
           </View>
         </View>
+      </ScrollView>
 
-        {/* 바텀 시트 컴포넌트 */}
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          snapPoints={snapPoints}
-          enablePanDownToClose={true}
-          enableDynamicSizing={false}
-          backdropComponent={renderBackdrop}
-          backgroundStyle={styles.bottomSheetBackground}
-        >
-          <BottomSheetFlatList
-            data={currentOptions}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.bottomSheetItem} onPress={() => handleSelect(item)}>
-                <Text style={styles.bottomSheetItemText}>{item}</Text>
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={styles.bottomSheetListContainer}
-          />
-        </BottomSheet>
-      </View>
-    </SafeAreaView>
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose={true}
+        enableDynamicSizing={false}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={styles.bottomSheetBackground}
+      >
+        <BottomSheetFlatList
+          data={currentOptions}
+          keyExtractor={(item) => item}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.bottomSheetItem} onPress={() => handleSelect(item)}>
+              <Text style={styles.bottomSheetItemText}>{item}</Text>
+            </TouchableOpacity>
+          )}
+          contentContainerStyle={styles.bottomSheetListContainer}
+        />
+      </BottomSheet>
+    </View>
   );
 }
 
@@ -324,7 +373,11 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  scrollContent: {
     paddingHorizontal: 24,
+    paddingBottom: 60, //+ insets.bottom,
+    flexGrow: 1,
   },
   header: {
     marginTop: 60,
@@ -342,7 +395,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   form: {
-    flex: 1,
     gap: 24,
   },
   inputGroup: {
@@ -372,7 +424,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingBottom: 20,
-    paddingTop: 10,
   },
   submitButton: {
     height: 56,
@@ -382,7 +433,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitButtonDisabled: {
-    backgroundColor: colors.border.muted, // 비활성화 색상
+    backgroundColor: colors.border.muted,
   },
   submitButtonText: {
     fontSize: 16,
@@ -416,7 +467,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: colors.border.subtle,
-    marginBottom: 24,
   },
   allAgreeRow: {
     flexDirection: 'row',

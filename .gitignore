@@ -45,3 +45,5 @@ yarn-error.*
 
 #custom
 history/
+
+dist/
