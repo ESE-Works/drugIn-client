@@ -15,7 +15,7 @@ export default function MyPage() {
 
   useEffect(() => {
     console.log('====== 현재 스토어에 저장된 유저 정보 ======');
-    console.log(JSON.stringify(user, null, 2)); // 보기 좋게 포맷팅해서 출력
+    console.log(JSON.stringify(user, null, 2));
     console.log('==============================================');
   }, [user]);
 
@@ -63,14 +63,8 @@ export default function MyPage() {
           leftContent={
             <Ionicons name="document-text-outline" size={22} color={colors.text.primary} />
           }
-          onPress={() => router.push('/terms')}
+          onPress={() => router.push('/mypage/terms')}
         />
-
-        {/* <ListItem
-          title="온보딩 테스트"
-          leftContent={<Ionicons size={22} color={colors.text.primary} />}
-          onPress={() => router.push('/(auth)/onboarding')}
-        /> */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -84,18 +78,18 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 40, // 맨 아래 여유 공간
+    paddingBottom: 40,
   },
   sectionTitle: {
     fontSize: 14,
     color: colors.text.secondary,
     marginTop: 24,
     marginBottom: 8,
-    paddingHorizontal: 12, // 리스트 아이템들과 줄을 맞추기 위함
+    paddingHorizontal: 12,
   },
   activeListItem: {
-    backgroundColor: colors.brand.primaryGhost, // 연한 파란색 배경
-    borderRadius: 12, // 둥근 모서리
+    backgroundColor: colors.brand.primaryGhost,
+    borderRadius: 12,
   },
   badgeText: {
     fontSize: 14,
@@ -107,6 +101,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border.subtle,
     marginTop: 16,
     marginBottom: 8,
-    marginHorizontal: 12, // 양옆 살짝 띄우기
+    marginHorizontal: 12,
   },
 });
