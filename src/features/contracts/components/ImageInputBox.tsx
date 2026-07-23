@@ -4,33 +4,36 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 import { colors, spacing, fontSize, fontWeight, radius } from '@/constants';
-import type { PickedImage } from '@/features/contracts/api';
-import { requireLogin } from '@/features/contracts/authGate';
+import type { ImageSource, PickedImage } from '@/features/contracts/api';
+import { requireLogin } from '@/lib/authGate';
 
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
 interface ImageInputBoxProps {
   image: PickedImage | null;
   onPick: (image: PickedImage) => void;
+  onClear: () => void;
   onSizeExceeded: () => void;
   disabled?: boolean;
 }
 
-function toPickedImage(asset: ImagePicker.ImagePickerAsset): PickedImage {
+function toPickedImage(asset: ImagePicker.ImagePickerAsset, source: ImageSource): PickedImage {
   return {
     uri: asset.uri,
     mimeType: asset.mimeType ?? 'image/jpeg',
     fileName: asset.fileName ?? `contract-${Date.now()}.jpg`,
+    source,
   };
 }
 
 export default function ImageInputBox({
   image,
   onPick,
+  onClear,
   onSizeExceeded,
   disabled,
 }: ImageInputBoxProps) {
-  const handlePickResult = (result: ImagePicker.ImagePickerResult): void => {
+  const handlePickResult = (result: ImagePicker.ImagePickerResult, source: ImageSource): void => {
     if (result.canceled || result.assets.length === 0) return;
 
     const asset = result.assets[0];
@@ -38,7 +41,7 @@ export default function ImageInputBox({
       onSizeExceeded();
       return;
     }
-    onPick(toPickedImage(asset));
+    onPick(toPickedImage(asset, source));
   };
 
   const handleTakePhoto = async (): Promise<void> => {
@@ -48,7 +51,7 @@ export default function ImageInputBox({
     if (!permission.granted) return;
 
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
-    handlePickResult(result);
+    handlePickResult(result, 'image_camera');
   };
 
   const handlePickFromLibrary = async (): Promise<void> => {
@@ -61,13 +64,21 @@ export default function ImageInputBox({
       mediaTypes: ['images'],
       quality: 0.8,
     });
-    handlePickResult(result);
+    handlePickResult(result, 'image_gallery');
   };
 
   if (image) {
     return (
       <View style={styles.box}>
         <Image source={{ uri: image.uri }} style={styles.preview} resizeMode="contain" />
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={onClear}
+          disabled={disabled}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="close" size={16} color={colors.text.inverse} />
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.retakeButton}
           onPress={() => void handlePickFromLibrary()}
@@ -146,6 +157,17 @@ const styles = StyleSheet.create({
   preview: {
     width: '100%',
     height: '100%',
+  },
+  clearButton: {
+    position: 'absolute',
+    right: spacing.sm,
+    top: spacing.sm,
+    width: 28,
+    height: 28,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   retakeButton: {
     position: 'absolute',
