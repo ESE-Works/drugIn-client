@@ -6,6 +6,7 @@ export default function AnalysisLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="history" />
       <Stack.Screen name="[id]" />
+      <Stack.Screen name="market-check" />
     </Stack>
   );
 }
