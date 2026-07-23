@@ -10,11 +10,19 @@ export default function Header() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 12 }]}>
-      <Text style={styles.logoText}>청출어람</Text>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../../../assets/images/LOGO.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
+        <Text style={styles.logoText}>청출어람</Text>
+      </View>
+
       <View style={styles.rightSection}>
         <Link href="/mypage" asChild>
           <TouchableOpacity activeOpacity={0.7} style={styles.iconButton}>
-            <Ionicons name="person-circle" size={26} color={colors.brand.primaryDeepest} />
+            <Ionicons name="person-circle" size={33} color={colors.brand.primaryDeepest} />
           </TouchableOpacity>
         </Link>
       </View>
@@ -31,12 +39,20 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     backgroundColor: colors.bg.base,
   },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoImage: {
+    width: 45, // 로고 이미지의 너비 (원하는 크기로 조절하세요)
+    height: 45, // 로고 이미지의 높이
+  },
+
   logoText: {
-    fontSize: 24, // 글자 크기를 키우기
-    fontWeight: '900', // 최대한 두껍게 설정
-    color: '#2563EB', // 사진과 유사한 파란색 계열 (원하시는 톤으로 조절 가능)
-    // marginTop: 12, // 위쪽 로고 이미지와의 간격
-    letterSpacing: -1, // 자간을 좁혀서 묵직한 느낌 주기
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#2563EB',
+    letterSpacing: -1,
   },
   rightSection: {
     flexDirection: 'row',

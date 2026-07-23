@@ -19,6 +19,7 @@ apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =>
     }
   }
   console.log('🚀 [API 요청]:', config.url);
+  console.log('🔗 실제 날아가는 전체 주소:', config.baseURL, config.url);
   return config;
 });
 
