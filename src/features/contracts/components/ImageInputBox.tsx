@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { colors, spacing, fontSize, fontWeight, radius } from '@/constants';
 import type { PickedImage } from '@/features/contracts/api';
+import { requireLogin } from '@/features/contracts/authGate';
 
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
@@ -41,6 +42,8 @@ export default function ImageInputBox({
   };
 
   const handleTakePhoto = async (): Promise<void> => {
+    if (!requireLogin()) return;
+
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) return;
 
@@ -49,6 +52,8 @@ export default function ImageInputBox({
   };
 
   const handlePickFromLibrary = async (): Promise<void> => {
+    if (!requireLogin()) return;
+
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return;
 
