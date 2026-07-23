@@ -1,3 +1,4 @@
+//내가 동의한 이용약관
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,7 +7,6 @@ import { colors } from '@/constants/colors';
 import SubHeader from '@/components/layout/SubHeader';
 import { getMyConsents, type UserConsentItem } from '@/features/auth/api/termsApi';
 
-// 💡 1. 서버의 영문 term_type을 유저가 보기 좋은 한글 제목으로 매핑
 const TERM_TITLE_MAP: Record<string, string> = {
   PRIVACY_REQUIRED: '개인정보 수집·이용 동의 (필수)',
   UNIQUE_ID: '고유식별정보 처리 동의',

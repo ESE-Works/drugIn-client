@@ -56,14 +56,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: colors.bg.base,
+    justifyContent: 'center',
   },
   backButton: {
-    marginRight: 16,
+    position: 'absolute',
+    left: 20,
+    zIndex: 10,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
     color: colors.text.primary,
-    flex: 1,
+    paddingHorizontal: 60,
   },
 });
