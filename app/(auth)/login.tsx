@@ -19,9 +19,9 @@ import { colors } from '@/constants/colors';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { handleKakaoLogin, handleGoogleLogin } = useSocialLogin();
+  const { handleKakaoLogin, handleGoogleLogin, handleTestLogin } = useSocialLogin();
 
-  const [loadingProvider, setLoadingProvider] = useState<'google' | 'kakao' | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<'google' | 'kakao' | 'test' | null>(null);
 
   const onGooglePress = async () => {
     if (loadingProvider !== null) return;
@@ -38,6 +38,16 @@ export default function LoginScreen() {
     try {
       setLoadingProvider('kakao');
       await handleKakaoLogin();
+    } finally {
+      setLoadingProvider(null);
+    }
+  };
+
+  const onTestPress = async () => {
+    if (loadingProvider !== null) return;
+    try {
+      setLoadingProvider('test');
+      await handleTestLogin();
     } finally {
       setLoadingProvider(null);
     }
@@ -113,6 +123,21 @@ export default function LoginScreen() {
             )}
             <Text style={styles.kakaoButtonText}>
               {loadingProvider === 'kakao' ? '로그인 중...' : '카카오로 로그인'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* 심사위원 테스트용 임시 버튼 (소셜 로그인 없이 전체 기능 확인 가능) */}
+          <TouchableOpacity
+            style={[styles.baseButton, styles.testButton]}
+            activeOpacity={0.7}
+            disabled={loadingProvider !== null}
+            onPress={() => void onTestPress()}
+          >
+            {loadingProvider === 'test' ? (
+              <ActivityIndicator size="small" color="#374151" style={styles.iconStyle} />
+            ) : null}
+            <Text style={styles.testButtonText}>
+              {loadingProvider === 'test' ? '로그인 중...' : '테스트 로그인'}
             </Text>
           </TouchableOpacity>
 
@@ -217,6 +242,17 @@ const styles = StyleSheet.create({
   kakaoIcon: {
     fontSize: 16,
     color: '#000000',
+  },
+  testButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#9CA3AF',
+  },
+  testButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#374151',
   },
   guestButton: {
     alignSelf: 'center',

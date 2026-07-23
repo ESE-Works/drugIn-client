@@ -25,3 +25,14 @@ export const refreshAccessToken = async (refreshToken: string) => {
   );
   return data;
 };
+
+interface TestLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+// 심사위원 등이 소셜 로그인 없이 앱을 테스트할 수 있도록 하는 어드민 전용 로그인.
+export const testLogin = async (key: string) => {
+  const { data } = await apiClient.post<TestLoginResponse>('/auth/test-login', { key });
+  return data;
+};
