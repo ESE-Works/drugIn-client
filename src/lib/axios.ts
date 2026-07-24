@@ -8,6 +8,9 @@ const apiClient = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    // 백엔드를 ngrok 무료 터널로 노출할 때, 브라우저 요청은 ngrok이 실제 응답 대신
+    // 경고 인터스티셜 페이지(CORS 헤더 없음)를 돌려준다. 이 헤더로 그 페이지를 건너뛴다.
+    'ngrok-skip-browser-warning': 'true',
   },
 });
 
