@@ -315,7 +315,7 @@ export default function OnboardingScreen() {
                     {term.title}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push('/policy')}>
+                <TouchableOpacity onPress={() => router.push('./terms')}>
                   <Text style={styles.detailText}>보기</Text>
                 </TouchableOpacity>
               </View>

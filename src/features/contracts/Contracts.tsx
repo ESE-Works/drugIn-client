@@ -19,10 +19,13 @@ import type { Contract } from '@/types/api';
 
 import type { PickedImage } from './api';
 import { useAnalyzeImageMutation, useContractSampleQuery } from './hooks';
+import { requireLogin } from '@/lib/authGate';
 import AnalysisResultView from './components/AnalysisResultView';
 import ImageInputBox from './components/ImageInputBox';
+import MarketCheckLanding from '@/features/marketCheck/components/MarketCheckLanding';
 
 type Stage = 'idle' | 'loading' | 'result';
+type Tab = 'contract' | 'marketCheck';
 
 function getErrorMessage(error: unknown): string {
   // 백엔드가 반환하는 원문 메시지(라우트 오류, 서버 내부 오류 등)는 사용자에게 그대로 노출하지 않는다.
@@ -37,6 +40,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 export default function Contracts() {
+  const [activeTab, setActiveTab] = useState<Tab>('contract');
   const [stage, setStage] = useState<Stage>('idle');
   const [image, setImage] = useState<PickedImage | null>(null);
   const [contract, setContract] = useState<Contract | null>(null);
@@ -46,6 +50,10 @@ export default function Contracts() {
   const sampleQuery = useContractSampleQuery(false);
 
   const handleSubmit = (): void => {
+    if (!requireLogin()) {
+      return;
+    }
+
     if (!image) {
       setToastMessage('사진을 선택해주세요.');
       return;
@@ -121,40 +129,75 @@ export default function Contracts() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
-        <ImageInputBox
-          image={image}
-          onPick={setImage}
-          onSizeExceeded={() => setToastMessage('10MB 이하의 사진만 업로드할 수 있어요.')}
-          disabled={isLoading}
-        />
-
-        <View style={styles.belowBox}>
-          {isLoading ? (
-            <>
-              <Text style={styles.loadingText}>분석 중</Text>
-              <ActivityIndicator size="large" color={colors.brand.primary} />
-            </>
-          ) : image ? (
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleSubmit}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.submitText}>분석하기</Text>
-            </TouchableOpacity>
-          ) : (
-            <Text style={styles.caption}>계약서 사진 한 장이면{'\n'}위험요소를 찾아드려요</Text>
-          )}
-        </View>
-
-        <View style={styles.footerLinks}>
-          <TouchableOpacity onPress={handleViewSample} disabled={isLoading}>
-            <Text style={styles.footerLink}>샘플로 먼저 볼까요?</Text>
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tabButton, activeTab === 'contract' && styles.tabButtonActive]}
+            onPress={() => setActiveTab('contract')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.tabLabel, activeTab === 'contract' && styles.tabLabelActive]}>
+              계약서 분석
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/analysis/history')} disabled={isLoading}>
-            <Text style={styles.footerLink}>분석 이력</Text>
+          <TouchableOpacity
+            style={[styles.tabButton, activeTab === 'marketCheck' && styles.tabButtonActive]}
+            onPress={() => setActiveTab('marketCheck')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.tabLabel, activeTab === 'marketCheck' && styles.tabLabelActive]}>
+              시세 진단
+            </Text>
           </TouchableOpacity>
         </View>
+
+        {activeTab === 'marketCheck' ? (
+          <MarketCheckLanding />
+        ) : (
+          <>
+            <ImageInputBox
+              image={image}
+              onPick={setImage}
+              onClear={() => setImage(null)}
+              onSizeExceeded={() => setToastMessage('10MB 이하의 사진만 업로드할 수 있어요.')}
+              disabled={isLoading}
+            />
+
+            <View style={styles.belowBox}>
+              {isLoading ? (
+                <>
+                  <Text style={styles.loadingText}>분석 중</Text>
+                  <ActivityIndicator size="large" color={colors.brand.primary} />
+                </>
+              ) : image ? (
+                <TouchableOpacity
+                  style={styles.submitButton}
+                  onPress={handleSubmit}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.submitText}>분석하기</Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={styles.caption}>계약서 사진 한 장이면{'\n'}위험요소를 찾아드려요</Text>
+              )}
+            </View>
+
+            <View style={styles.footerLinks}>
+              <TouchableOpacity onPress={handleViewSample} disabled={isLoading}>
+                <Text style={styles.footerLink}>샘플로 먼저 볼까요?</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (requireLogin()) {
+                    router.push('/analysis/history');
+                  }
+                }}
+                disabled={isLoading}
+              >
+                <Text style={styles.footerLink}>분석 이력</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
 
         <Toast message={toastMessage} onHide={() => setToastMessage(null)} />
       </View>
@@ -167,6 +210,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bg.base,
     padding: spacing.lg,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    marginBottom: spacing.lg,
+    borderRadius: radius.lg,
+    backgroundColor: colors.bg.muted,
+    padding: spacing.xxs,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    alignItems: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: colors.bg.base,
+    elevation: 1,
+  },
+  tabLabel: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+    color: colors.text.secondary,
+  },
+  tabLabelActive: {
+    color: colors.brand.primary,
+    fontWeight: fontWeight.bold,
   },
   belowBox: {
     alignItems: 'center',

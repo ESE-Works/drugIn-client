@@ -1,3 +1,5 @@
+//로그인 시 이용약관
+
 import React, { useEffect, useState } from 'react';
 import {
   View,

@@ -80,3 +80,27 @@ export interface Contract {
   input_source: InputSource;
   analysis_result: AnalysisResult | null;
 }
+
+// --- 시세 진단 도메인 ---
+export type TransactionType = 'sale' | 'jeonse' | 'monthly';
+export type MarketPropertyType = 'apartment' | 'officetel' | 'villa';
+export type RiskLevel = 'safe' | 'warning' | 'unknown';
+
+export interface MarketCheckRequest {
+  transactionType: TransactionType;
+  propertyType: MarketPropertyType;
+  amount: number;
+  monthlyRent?: number;
+  sido: string;
+  sigungu: string;
+}
+
+export interface MarketCheckResult {
+  available: boolean;
+  sampleCount: number;
+  marketMedianAmount: number | null;
+  marketMedianMonthlyRent: number | null;
+  diffPercent: number | null;
+  riskLevel: RiskLevel;
+  message: string;
+}
