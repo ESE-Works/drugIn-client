@@ -3,7 +3,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
 
-import { socialLogin } from '../api/authApi';
+import { socialLogin, testLogin } from '../api/authApi';
 import { getUserProfile } from '../api/userApi';
 import { useAuthStore } from '@/store/authStore';
 
@@ -12,25 +12,38 @@ GoogleSignin.configure({
   iosClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
 });
 
+// 심사위원 테스트용 어드민 로그인 키 (소셜 로그인 없이 앱 전체를 사용해볼 수 있게 함)
+const TEST_LOGIN_KEY = 'ca28b8f7e8f55c0d35abbf4a';
+
 export const useSocialLogin = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const processBackendLogin = async (provider: 'kakao' | 'google', accessToken: string) => {
-    // 서버로 토큰 보내서 JWT 발급받기
-    const loginData = await socialLogin(provider, accessToken);
-    const serverAccessToken = loginData.accessToken;
-    const serverRefreshToken = loginData.refresh_token || '';
-
+  const finishLogin = async (accessToken: string, refreshToken: string) => {
     // 발급받은 accessToken으로 유저 정보 조회
-    const userProfile = await getUserProfile(serverAccessToken);
-    console.log(`👀 [${provider}] getUserProfile이 반환한 값:`, userProfile);
+    const userProfile = await getUserProfile(accessToken);
 
     // 스토어에 저장 및 화면 이동
-    await setAuth(userProfile, serverAccessToken, serverRefreshToken);
+    await setAuth(userProfile, accessToken, refreshToken);
     if (userProfile.region && userProfile.age) {
       router.replace('/(tabs)');
     } else {
       router.replace('/(auth)/onboarding');
+    }
+  };
+
+  const processBackendLogin = async (provider: 'kakao' | 'google', accessToken: string) => {
+    // 서버로 토큰 보내서 JWT 발급받기
+    const loginData = await socialLogin(provider, accessToken);
+    console.log(`👀 [${provider}] socialLogin 응답:`, loginData);
+    await finishLogin(loginData.accessToken, loginData.refresh_token || '');
+  };
+
+  const handleTestLogin = async () => {
+    try {
+      const { accessToken, refreshToken } = await testLogin(TEST_LOGIN_KEY);
+      await finishLogin(accessToken, refreshToken);
+    } catch (e) {
+      console.error('테스트 로그인 실패:', e);
     }
   };
 
@@ -60,5 +73,5 @@ export const useSocialLogin = () => {
     }
   };
 
-  return { handleKakaoLogin, handleGoogleLogin };
+  return { handleKakaoLogin, handleGoogleLogin, handleTestLogin };
 };

@@ -11,7 +11,13 @@ import { useAuthStore } from '@/store/authStore';
 
 export default function MyPage() {
   const user = useAuthStore((state) => state.user);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const { isLoggedIn } = useAuthStore();
+
+  const handleLogout = async (): Promise<void> => {
+    await clearAuth();
+    router.replace('/(auth)/login');
+  };
 
   useEffect(() => {
     console.log('====== 현재 스토어에 저장된 유저 정보 ======');
@@ -64,6 +70,14 @@ export default function MyPage() {
             <Ionicons name="document-text-outline" size={22} color={colors.text.primary} />
           }
           onPress={() => router.push('/mypage/terms')}
+        />
+
+        <View style={styles.divider} />
+
+        <ListItem
+          title="로그아웃"
+          leftContent={<Ionicons name="log-out-outline" size={22} color={colors.text.primary} />}
+          onPress={() => void handleLogout()}
         />
       </ScrollView>
     </SafeAreaView>

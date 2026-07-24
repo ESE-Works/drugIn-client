@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import SubHeader from '@/components/layout/SubHeader';
 import AnalysisHistory from '@/features/contracts/AnalysisHistory';
-import { useIsLoggedIn } from '@/features/contracts/authGate';
+import { useIsLoggedIn } from '@/lib/authGate';
 import { colors } from '@/constants';
 
 export default function AnalysisHistoryScreen() {
