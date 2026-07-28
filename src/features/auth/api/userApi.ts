@@ -1,4 +1,5 @@
 import apiClient from '@/lib/axios';
+import { logger } from '@/lib/logger';
 
 export interface UserProfile {
   id: string;
@@ -24,12 +25,12 @@ export const getUserProfile = async (accessToken: string) => {
     },
   });
 
-  console.log('👀 [2] 백엔드 /users/me 원본 응답:', data);
+  logger.log('👀 [2] 백엔드 /users/me 원본 응답:', data);
   return data;
 };
 
 export const updateUserProfile = async (payload: UpdateProfilePayload) => {
   const { data } = await apiClient.post<UserProfile>('/users/me/profile', payload);
-  console.log('👀 온보딩 정보 업데이트 성공:', data);
+  logger.log('👀 온보딩 정보 업데이트 성공:', data);
   return data;
 };

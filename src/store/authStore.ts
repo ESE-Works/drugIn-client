@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { getUserProfile } from '@/features/auth/api/userApi';
+import { logger } from '@/lib/logger';
 
 export interface User {
   id: string;
@@ -61,7 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ user: userProfile, isLoggedIn: true });
       }
     } catch (error) {
-      console.error('초기 유저 정보 불러오기 실패 (토큰 만료 등):', error);
+      logger.error('초기 유저 정보 불러오기 실패 (토큰 만료 등):', error);
       // 에러가 나면 찌꺼기 토큰을 지우고 로그아웃 상태로 만듦
       await tokenStorage.removeItem('access_token');
       await tokenStorage.removeItem('refresh_token');

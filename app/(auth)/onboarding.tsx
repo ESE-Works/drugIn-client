@@ -16,6 +16,7 @@ import { colors } from '@/constants/colors';
 import { useAuthStore } from '@/store/authStore';
 import { updateUserProfile } from '@/features/auth/api/userApi';
 import { postTermsConsents } from '@/features/auth/api/termsApi';
+import { logger } from '@/lib/logger';
 
 const REGION_OPTIONS = [
   '서울',
@@ -170,7 +171,7 @@ export default function OnboardingScreen() {
         income_range: incomeRange,
       };
 
-      console.log(
+      logger.log(
         '🚀 [전송하는 약관 데이터]:',
         JSON.stringify({ consents: consentsPayload }, null, 2),
       );
@@ -186,15 +187,15 @@ export default function OnboardingScreen() {
 
       router.replace('/(tabs)');
     } catch (error: any) {
-      console.error('온보딩 정보 등록 실패:', error);
+      logger.error('온보딩 정보 등록 실패:', error);
 
       if (error.response) {
         // 서버가 응답을 줬는데 에러인 경우 (400, 500 등)
-        console.error('서버 에러 상태 코드:', error.response.status);
-        console.error('서버 상세 에러 메시지:', error.response.data);
+        logger.error('서버 에러 상태 코드:', error.response.status);
+        logger.error('서버 상세 에러 메시지:', error.response.data);
       } else {
         // 네트워크 문제 등으로 서버에 아예 닿지 못한 경우
-        console.error('에러 내용:', error.message);
+        logger.error('에러 내용:', error.message);
       }
 
       Alert.alert(

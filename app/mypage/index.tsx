@@ -8,6 +8,7 @@ import { colors } from '@/constants/colors';
 import ListItem from '@/components/ListItem';
 import SubHeader from '@/components/layout/SubHeader';
 import { useAuthStore } from '@/store/authStore';
+import { logger } from '@/lib/logger';
 
 export default function MyPage() {
   const user = useAuthStore((state) => state.user);
@@ -20,9 +21,9 @@ export default function MyPage() {
   };
 
   useEffect(() => {
-    console.log('====== 현재 스토어에 저장된 유저 정보 ======');
-    console.log(JSON.stringify(user, null, 2));
-    console.log('==============================================');
+    logger.log('====== 현재 스토어에 저장된 유저 정보 ======');
+    logger.log(JSON.stringify(user, null, 2));
+    logger.log('==============================================');
   }, [user]);
 
   if (!isLoggedIn) {
@@ -43,7 +44,7 @@ export default function MyPage() {
           title="거주 지역"
           leftContent={<Ionicons name="location-outline" size={22} color={colors.text.primary} />}
           rightContent={<Text style={styles.badgeText}>{user?.region ?? '미설정'}</Text>}
-          onPress={() => console.log('거주 지역 클릭')}
+          onPress={() => logger.log('거주 지역 클릭')}
         />
 
         <ListItem
@@ -52,14 +53,14 @@ export default function MyPage() {
           rightContent={
             <Text style={styles.badgeText}>{user?.age ? `${user.age}세` : '미설정'}</Text>
           }
-          onPress={() => console.log('나이 클릭')}
+          onPress={() => logger.log('나이 클릭')}
         />
 
         <ListItem
           title="소득 구간"
           leftContent={<Ionicons name="wallet-outline" size={22} color={colors.text.primary} />}
           rightContent={<Text style={styles.badgeText}>{user?.income_range ?? '미설정'}</Text>}
-          onPress={() => console.log('소득 구간 클릭')}
+          onPress={() => logger.log('소득 구간 클릭')}
         />
 
         <View style={styles.divider} />

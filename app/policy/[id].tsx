@@ -14,6 +14,7 @@ import { useLocalSearchParams, Stack } from 'expo-router';
 import { colors } from '@/constants/colors';
 import SubHeader from '@/components/layout/SubHeader';
 import { getBenefitDetail } from '@/features/policy/api/benefitsApi';
+import { logger } from '@/lib/logger';
 
 interface BenefitDetail {
   id: string;
@@ -41,7 +42,7 @@ export default function PolicyDetailScreen() {
         const data = await getBenefitDetail(id);
         setDetail(data);
       } catch (error) {
-        console.error(`❌ [/benefits/${id} API 요청 실패]:`, error);
+        logger.error(`❌ [/benefits/${id} API 요청 실패]:`, error);
       } finally {
         setLoading(false);
       }
@@ -55,7 +56,7 @@ export default function PolicyDetailScreen() {
     if (supported) {
       await Linking.openURL(url);
     } else {
-      console.warn(`이 URL을 열 수 없습니다: ${url}`);
+      logger.warn(`이 URL을 열 수 없습니다: ${url}`);
     }
   };
 

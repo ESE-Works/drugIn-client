@@ -1,4 +1,5 @@
 import apiClient from '@/lib/axios';
+import { logger } from '@/lib/logger';
 
 interface SocialLoginResponse {
   accessToken: string;
@@ -14,7 +15,7 @@ interface SocialLoginResponse {
 export const socialLogin = async (provider: 'kakao' | 'google', accessToken: string) => {
   const { data } = await apiClient.post<SocialLoginResponse>(`/auth/${provider}`, { accessToken });
 
-  console.log('로그인 API 응답 데이터:', data);
+  logger.log('로그인 API 응답 데이터:', data);
   return data;
 };
 

@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { socialLogin, testLogin } from '../api/authApi';
 import { getUserProfile } from '../api/userApi';
 import { useAuthStore } from '@/store/authStore';
+import { logger } from '@/lib/logger';
 
 GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
@@ -34,7 +35,7 @@ export const useSocialLogin = () => {
   const processBackendLogin = async (provider: 'kakao' | 'google', accessToken: string) => {
     // 서버로 토큰 보내서 JWT 발급받기
     const loginData = await socialLogin(provider, accessToken);
-    console.log(`👀 [${provider}] socialLogin 응답:`, loginData);
+    logger.log(`👀 [${provider}] socialLogin 응답:`, loginData);
     await finishLogin(loginData.accessToken, loginData.refresh_token || '');
   };
 
@@ -43,7 +44,7 @@ export const useSocialLogin = () => {
       const { accessToken, refreshToken } = await testLogin(TEST_LOGIN_KEY);
       await finishLogin(accessToken, refreshToken);
     } catch (e) {
-      console.error('테스트 로그인 실패:', e);
+      logger.error('테스트 로그인 실패:', e);
     }
   };
 
@@ -52,7 +53,7 @@ export const useSocialLogin = () => {
       const kakaoToken = await kakaoLogin();
       await processBackendLogin('kakao', kakaoToken.accessToken);
     } catch (e) {
-      console.error('카카오 로그인 실패:', e);
+      logger.error('카카오 로그인 실패:', e);
     }
   };
 
@@ -64,12 +65,12 @@ export const useSocialLogin = () => {
       await GoogleSignin.signIn();
       // 토큰 가져오기
       const tokens = await GoogleSignin.getTokens();
-      console.log('⭐️ 진짜 구글 토큰:', tokens.accessToken);
+      logger.log('⭐️ 진짜 구글 토큰:', tokens.accessToken);
 
       // 백엔드로 구글 토큰 전달
       await processBackendLogin('google', tokens.accessToken);
     } catch (e) {
-      console.error('구글 로그인 실패:', e);
+      logger.error('구글 로그인 실패:', e);
     }
   };
 

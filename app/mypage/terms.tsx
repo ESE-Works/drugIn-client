@@ -6,6 +6,7 @@ import { Stack } from 'expo-router';
 import { colors } from '@/constants/colors';
 import SubHeader from '@/components/layout/SubHeader';
 import { getMyConsents, type UserConsentItem } from '@/features/auth/api/termsApi';
+import { logger } from '@/lib/logger';
 
 const TERM_TITLE_MAP: Record<string, string> = {
   PRIVACY_REQUIRED: '개인정보 수집·이용 동의 (필수)',
@@ -25,7 +26,7 @@ export default function TermDetailScreen() {
         const data = await getMyConsents();
         setConsents(data);
       } catch (error) {
-        console.error('내 동의 이력 조회 실패:', error);
+        logger.error('내 동의 이력 조회 실패:', error);
       } finally {
         setLoading(false);
       }

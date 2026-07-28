@@ -2,6 +2,7 @@ import axios, { type InternalAxiosRequestConfig, type AxiosResponse, type AxiosE
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { refreshAccessToken } from '@/features/auth/api/authApi';
+import { logger } from '@/lib/logger';
 
 const apiClient = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -42,14 +43,14 @@ apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =>
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
-  console.log('🚀 [API 요청]:', config.url);
-  console.log('🔗 실제 날아가는 전체 주소:', config.baseURL, config.url);
+  logger.log('🚀 [API 요청]:', config.url);
+  logger.log('🔗 실제 날아가는 전체 주소:', config.baseURL, config.url);
   return config;
 });
 
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`✅ [API 응답 성공] ${response.config.url}:`, response.data);
+    logger.log(`✅ [API 응답 성공] ${response.config.url}:`, response.data);
 
     return response;
   },
@@ -63,7 +64,7 @@ apiClient.interceptors.response.use(
       originalRequest.url !== '/auth/refresh'
     ) {
       originalRequest._retry = true;
-      console.log('🚨 [인터셉터] 401 에러 감지! 토큰 재발급(Refresh)을 시도합니다.');
+      logger.log('🚨 [인터셉터] 401 에러 감지! 토큰 재발급(Refresh)을 시도합니다.');
 
       try {
         // 2. 저장된 리프레시 토큰 가져오기
@@ -73,7 +74,7 @@ apiClient.interceptors.response.use(
         // 3. 토큰 갱신 API 호출
         const { accessToken, refreshToken: newRefreshToken } =
           await refreshAccessToken(refreshToken);
-        console.log('✅ [인터셉터] 토큰 갱신 성공! 실패했던 API를 재요청합니다.');
+        logger.log('✅ [인터셉터] 토큰 갱신 성공! 실패했던 API를 재요청합니다.');
 
         // 4. 새 토큰 저장
         await setStoredToken('access_token', accessToken);
@@ -84,7 +85,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         // 6. 리프레시 토큰도 만료되었다면 로그아웃 처리
-        console.error('로그인 세션 만료, 다시 로그인 필요');
+        logger.error('로그인 세션 만료, 다시 로그인 필요');
         await removeStoredToken('access_token');
         await removeStoredToken('refresh_token');
         // 여기서 로그인 화면으로 강제 이동 로직 추가 가능

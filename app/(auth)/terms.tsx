@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '@/constants/colors';
 import { getTerms, type TermItem } from '@/features/auth/api/termsApi';
+import { logger } from '@/lib/logger';
 
 export default function PolicyScreen() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function PolicyScreen() {
 
         setTerms(data);
       } catch (error) {
-        console.error('약관 목록 조회 실패:', error);
+        logger.error('약관 목록 조회 실패:', error);
       } finally {
         setLoading(false);
       }

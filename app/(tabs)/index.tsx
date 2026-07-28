@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
 import Card from '@/components/Card';
 import { getBenefits } from '@/features/policy/api/benefitsApi';
+import { logger } from '@/lib/logger';
 
 interface PolicyItem {
   id: string;
@@ -39,7 +40,7 @@ export default function HomeScreen() {
         const data = await getBenefits({});
         setPolicies(data);
       } catch (error) {
-        console.error('❌ [/benefits API 요청 실패]:', error);
+        logger.error('❌ [/benefits API 요청 실패]:', error);
       } finally {
         setIsLoading(false);
       }
