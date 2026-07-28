@@ -45,5 +45,6 @@ yarn-error.*
 
 #custom
 history/
+docs/
 
 dist/
